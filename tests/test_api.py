@@ -41,11 +41,21 @@ def test_route_with_path_and_query_params(app, client):
         return path_aparam + query_param
     
     assert client.get("http://localhost:8000/path_and_query/Hello%20?query_param=World!").text == "Hello World!"
+
 def test_adding_existing_route_throws_exception(app, client):
     @app.route("/")
-    def index_handler(): pass
+    def index_handler_1(): pass
 
     with pytest.raises(Exception):
         @app.route("/")
-        def index_handler(): pass
+        def index_handler_2(): pass
+
+def test_html_template_rendering(app, client):
+    @app.route("/html")
+    def handler_that_renderes_an_html_template():
+        return app.template('index.html', {"title": "Hello", "message": "World!"})
     
+    response = client.get("http://localhost:8000/html")
+    #assert "text/html" in response.headers["Content-Type"]
+    assert "Hello" in response.text 
+    assert "World!" in response.text 
